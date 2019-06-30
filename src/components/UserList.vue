@@ -29,9 +29,9 @@
             },
             _changeModalStatus(status) {
                 if (!status) {
-                    this.isOpenModal = status;
+                    this.selectedUser = {};
                 }
-                this.selectedUser = false;
+                this.isOpenModal = status;
             }
         },
         mounted() {
