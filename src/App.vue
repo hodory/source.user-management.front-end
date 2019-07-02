@@ -1,21 +1,26 @@
 <template>
     <div id="app" class="container">
-        <UserList v-bind:end-point="endPoint"></UserList>
+        <a href="" v-if="isAuthenticated" @click.prevent="onClickLogout">Logout</a>
+        <router-link to="/login" v-else>Login</router-link>
+        <router-view></router-view>
     </div>
 </template>
 
 <script>
-    import UserList from './components/UserList.vue';
+    import store from './store';
 
     export default {
         name: 'app',
-        data: function () {
-            return {
-                endPoint: `https://hodory-user-management.herokuapp.com`
-            };
+        computed: {
+            isAuthenticated() {
+                return localStorage.getItem('user-management.accesstoken') ? true : false;
+            }
         },
-        components: {
-            UserList,
+        methods: {
+            onClickLogout() {
+                // LOGOUT 변이 실행 후 리다이렉트
+                store.dispatch('LOGOUT').then(() => this.$router.push('/'))
+            }
         }
     }
 </script>
