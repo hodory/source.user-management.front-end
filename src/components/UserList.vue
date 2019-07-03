@@ -60,7 +60,7 @@
                         <label class="label">등급</label>
                         <div class="control">
                             <p v-if="_isMaster" class="is-success">Master</p>
-                            <p v-else-if="!_isEditable" class="is-success">{{levels[selectedUser.level]}}</p>
+                            <p v-else-if="!_isEditable || _isSameUser" class="is-success">{{levels[selectedUser.level]}}</p>
                             <div class="select" v-else>
                                 <select v-model.number="selectedUser.level">
                                     <option
@@ -81,14 +81,11 @@
                                 </span>
                                 <span>{{_statusText}}</span>
                             </a>
-                            <a class="button is-danger is-outlined" @click.prevent="_onDelete()">
+                            <a v-if="!_isSameUser" class="button is-danger is-outlined" @click.prevent="_onDelete()">
                                 <span class="icon is-small">
                                     <i class="fas fa-times"></i>
                                 </span>
                                 <span>삭제</span>
-                            </a>
-                            <a class="button" @click.prevent="_changeModalStatus(false)">
-                                <span>취소</span>
                             </a>
                         </p>
                     </div>
@@ -240,8 +237,11 @@
             _isMaster() {
                 return this.selectedUser.level === 99;
             },
+            _isSameUser() {
+                return this.loginUser.id === this.selectedUser.id;
+            },
             _isEditable() {
-                return this.isEditable && this.loginUser.level > this.selectedUser.level;
+                return this.isEditable && (this._isSameUser || this.loginUser.level > this.selectedUser.level);
             }
         },
     }
