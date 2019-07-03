@@ -73,13 +73,24 @@
                         </div>
                     </div>
 
-                    <div class="field is-grouped" v-if="_isEditable">
-                        <div class="control" @click="_onSubmit()">
-                            <button class="button is-link">{{_statusText}}</button>
-                        </div>
-                        <div class="control" @click="_changeModalStatus(false)">
-                            <button class="button is-text">취소</button>
-                        </div>
+                    <div class="is-grouped" v-if="_isEditable">
+                        <p class="buttons">
+                            <a class="button is-success" @click.prevent="_onSubmit()">
+                                <span class="icon is-small">
+                                  <i class="fas fa-check"></i>
+                                </span>
+                                <span>{{_statusText}}</span>
+                            </a>
+                            <a class="button is-danger is-outlined" @click.prevent="_onDelete()">
+                                <span class="icon is-small">
+                                    <i class="fas fa-times"></i>
+                                </span>
+                                <span>삭제</span>
+                            </a>
+                            <a class="button" @click.prevent="_changeModalStatus(false)">
+                                <span>취소</span>
+                            </a>
+                        </p>
                     </div>
                 </section>
             </div>
@@ -174,14 +185,13 @@
                 );
             },
             async _onSubmit() {
-                // TODO : 회원 등록 / 수정시 리렌더링 처리
                 if(!this._isEditable) {
                     return false;
                 }
                 // userID 리턴받도록 수정
                 if (this.isUpdate) {
                     try {
-                        const updateResponse = await axios.patch(`https://hodory-user-management.herokuapp.com/v1/users/${this.selectedUser.id}`, {
+                        await axios.patch(`https://hodory-user-management.herokuapp.com/v1/users/${this.selectedUser.id}`, {
                             "id": this.selectedUser.userId,
                             "name": this.selectedUser.name,
                             "level": this.selectedUser.level
@@ -192,7 +202,7 @@
                     }
                 } else {
                     try {
-                        const createResponse = await axios.post(`https://hodory-user-management.herokuapp.com/v1/users`, {
+                        await axios.post(`https://hodory-user-management.herokuapp.com/v1/users`, {
                             "id": this.selectedUser.userId,
                             "password": this.password,
                             "name": this.selectedUser.name,
@@ -202,6 +212,14 @@
                     } catch (e) {
                         alert(e.response.data.message);
                     }
+                }
+            },
+            async _onDelete() {
+                try {
+                    await axios.delete(`https://hodory-user-management.herokuapp.com/v1/users/${this.selectedUser.id}`);
+                    this._refresh();
+                } catch (e) {
+                    alert(e.response.data.message);
                 }
             }
         },
