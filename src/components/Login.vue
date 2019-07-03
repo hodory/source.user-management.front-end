@@ -56,10 +56,10 @@
                 this.$store.dispatch('LOGIN', {email, password})
                     .then(() => this.redirect())
                     .catch((e) => {
-                        if (!e.response) {
+                        if (e.toString()) {
+                            this.msg = e.toString();
+                        }else if (!e.response) {
                             this.redirect()
-                        } else if (e.response.statusCode === 204) {
-                            this.msg = "회원을 찾을 수 없습니다.";
                         } else {
                             this.statusCode = e.response.data.statusCode;
                             this.msg = e.response.data.message;

@@ -19,7 +19,9 @@
         methods: {
             onClickLogout() {
                 // LOGOUT 변이 실행 후 리다이렉트
-                store.dispatch('LOGOUT').then(() => this.$router.push('/'))
+                store.dispatch('LOGOUT').then(() => {
+                    this.$router.push('/')
+                });
             }
         },
         mounted () {

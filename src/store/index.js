@@ -32,7 +32,12 @@ export default new Vuex.Store({
     actions: {
         LOGIN({commit}, {email, password}) {
             return axios.post(`${resourceHost}/v1/auth/login`, {email, password})
-                .then(({data}) => {
+                .then(({status,data}) => {
+                    if(status === 204) {
+                        const error = new Error();
+                        error.message="회원을 찾을 수 없습니다.";
+                        throw error;
+                    }
                     commit('LOGIN', data);
                     axios.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
                 })
