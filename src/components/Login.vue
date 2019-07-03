@@ -1,12 +1,38 @@
 <template>
     <div>
-        <h2>Login</h2>
-        <form @submit.prevent="onSubmit(email, password)">
-            <input type="text" v-model="email" placeholder="Email Address">
-            <input type="password" v-model="password" placeholder="Password">
-            <input type="submit" value="Login">
-        </form>
-        <p><i></i></p>
+        <div v-if="!isAuthenticated">
+            <h2>Login</h2>
+            <form @submit.prevent="onSubmit(email, password)">
+                <div class="field">
+                    <p class="control has-icons-left has-icons-right">
+                        <input class="input" type="email"  v-model="email" placeholder="Email Address">
+                        <span class="icon is-small is-left">
+      <i class="fas fa-envelope"></i>
+    </span>
+                        <span class="icon is-small is-right">
+      <i class="fas fa-check"></i>
+    </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control has-icons-left">
+                        <input class="input" type="password" v-model="password" placeholder="Password">
+                        <span class="icon is-small is-left">
+      <i class="fas fa-lock"></i>
+    </span>
+                    </p>
+                </div>
+                <div>{{msg}}</div>
+                <div class="field">
+                    <p class="control">
+                        <button type="submit" class="button is-success">
+                            Login
+                        </button>
+                    </p>
+                </div>
+            </form>
+        </div>
+        <router-link to="/user/list" v-else>회원 목록</router-link>
     </div>
 </template>
 
@@ -20,6 +46,9 @@
                 msg: ''
             }
         },
+        props: [
+            'isAuthenticated'
+        ],
         methods: {
             onSubmit(email, password) {
 

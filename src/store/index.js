@@ -7,7 +7,7 @@ Vue.use(Vuex);
 const resourceHost = `https://hodory-user-management.herokuapp.com`;
 
 const enhanceAccessToken = () => {
-    const {accessToken} = localStorage;
+    const accessToken = localStorage['user-management.accesstoken'];
     if (!accessToken) return;
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 };

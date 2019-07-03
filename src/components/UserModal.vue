@@ -11,7 +11,7 @@
                     <label class="label">회원 ID</label>
                     <div class="control has-icons-left has-icons-right">
                         <input class="input" type="email" placeholder="email" v-model.trim="userId"
-                               :readonly="isUpdate">
+                               :readonly="isUpdate || !_isEditable">
                         <span class="icon is-small is-left">
       <i class="fas fa-envelope"></i>
     </span>
@@ -39,7 +39,7 @@
                 <div class="field">
                     <label class="label">회원명</label>
                     <div class="control has-icons-left has-icons-right">
-                        <input class="input" type="text" placeholder="Username" v-model.trim="userName">
+                        <input class="input" type="text" placeholder="Username" v-model.trim="userName" :readonly="!_isEditable">
                         <span class="icon is-small is-left">
       <i class="fas fa-user"></i>
     </span>
@@ -50,6 +50,7 @@
                     <label class="label">등급</label>
                     <div class="control">
                         <p v-if="_isMaster" class="is-success">Master</p>
+                        <p v-else-if="!_isEditable" class="is-success">{{levels[userLevel]}}</p>
                         <div class="select" v-else>
                             <select v-model.number="userLevel">
                                 <option
@@ -62,7 +63,7 @@
                     </div>
                 </div>
 
-                <div class="field is-grouped">
+                <div class="field is-grouped" v-if="_isEditable">
                     <div class="control" @click="_onSubmit()">
                         <button class="button is-link">{{_statusText}}</button>
                     </div>
@@ -88,6 +89,8 @@
             'isOpen',
             'changeModalStatus',
             'refreshList',
+            'isEditable',
+            'loginUserLevel'
         ],
         data: function () {
             return {
@@ -108,10 +111,16 @@
             _isMaster() {
                 return this.userLevel === 99;
             },
+            _isEditable() {
+                return this.isEditable && this.loginUserLevel > this.userLevel;
+            }
         },
         methods: {
             async _onSubmit() {
                 // TODO : 회원 등록 / 수정시 리렌더링 처리 및 하위컴포넌트화 하지않고 동일컴포넌트로 옮기는 것 검토
+                if(!this._isEditable()) {
+                    return false;
+                }
                 // userID 리턴받도록 수정
                 if (this.isUpdate) {
                     try {

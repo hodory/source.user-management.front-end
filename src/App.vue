@@ -1,8 +1,7 @@
 <template>
     <div id="app" class="container">
         <a href="" v-if="isAuthenticated" @click.prevent="onClickLogout">Logout</a>
-        <router-link to="/login" v-else>Login</router-link>
-        <router-view></router-view>
+        <router-view v-bind:isAuthenticated="isAuthenticated"></router-view>
     </div>
 </template>
 
@@ -13,7 +12,7 @@
         name: 'app',
         computed: {
             isAuthenticated() {
-                return localStorage.getItem('user-management.accesstoken') ? true : false;
+                return store.state.accessToken !== null || localStorage.getItem('user-management.accesstoken') ? true : false;
             }
         },
         methods: {

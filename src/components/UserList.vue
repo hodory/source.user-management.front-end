@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="field is-grouped">
+        <div class="field is-grouped" v-if="isEditable">
             <div class="control" @click="_onClickInsert">
                 <button class="button is-link">회원 등록</button>
             </div>
@@ -11,6 +11,8 @@
             <UserModal v-bind:userId.sync="selectedUser.userId"
                        v-bind:userName.sync="selectedUser.name"
                        v-bind:user-level.sync="selectedUser.level"
+                       v-bind:is-editable="isEditable"
+                       v-bind:login-user-level="loginUser.level"
                        v-bind:isOpen="isOpenModal"
                        v-bind:isUpdate="isUpdate"
                        v-bind:changeModalStatus="_changeModalStatus"
@@ -39,6 +41,9 @@
                 isUpdate: false,
                 isOpenModal: false,
                 endPoint: `https://hodory-user-management.herokuapp.com`,
+                loginUser: {
+                    level : 0
+                }
             };
         },
         methods: {
@@ -82,14 +87,29 @@
                         alert(`데이터 조회에 오류가 발생했습니다.${error.response.data.message}`);
                     }
                 );
+            },
+            _authMe() {
+                axios.get(`${this.endPoint}/v1/auth/me`).then(
+                    (res) => {
+                        const {data} = res.data;
+                        this.loginUser = data;
+                    },
+                    (error) => {
+                        alert(`로그인 정보 조회에 오류가 발생했습니다.${error.response.data.message}`);
+                    }
+                );
             }
         },
         mounted() {
+            this._authMe();
             this._getUsers();
         },
         computed: {
             isUserExists() {
                 return this.users.length > 0;
+            },
+            isEditable(){
+                return this.loginUser && this.loginUser.level > 4;
             }
         },
     }
