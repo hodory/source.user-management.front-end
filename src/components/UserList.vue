@@ -20,7 +20,7 @@
                     <div class="field">
                         <label class="label">회원 ID</label>
                         <div class="control has-icons-left has-icons-right">
-                            <input class="input" type="email" placeholder="email" v-model.trim="this.selectedUser.userId"
+                            <input class="input" type="email" placeholder="email" v-model.trim="selectedUser.userId"
                                    :readonly="isUpdate || !_isEditable">
                             <span class="icon is-small is-left">
       <i class="fas fa-envelope"></i>
@@ -49,7 +49,7 @@
                     <div class="field">
                         <label class="label">회원명</label>
                         <div class="control has-icons-left has-icons-right">
-                            <input class="input" type="text" placeholder="Username" v-model.trim="this.selectedUser.name" :readonly="!_isEditable">
+                            <input class="input" type="text" placeholder="Username" v-model.trim="selectedUser.name" :readonly="!_isEditable">
                             <span class="icon is-small is-left">
       <i class="fas fa-user"></i>
     </span>
@@ -98,6 +98,7 @@
             return {
                 users: [],
                 selectedUser: {
+                    id: 0,
                     level: 1,
                     name: null,
                     updatedAt: null,
@@ -174,13 +175,13 @@
             },
             async _onSubmit() {
                 // TODO : 회원 등록 / 수정시 리렌더링 처리
-                if(!this._isEditable()) {
+                if(!this._isEditable) {
                     return false;
                 }
                 // userID 리턴받도록 수정
                 if (this.isUpdate) {
                     try {
-                        const updateResponse = await axios.patch(`https://hodory-user-management.herokuapp.com/v1/users/2`, {
+                        const updateResponse = await axios.patch(`https://hodory-user-management.herokuapp.com/v1/users/${this.selectedUser.id}`, {
                             "id": this.selectedUser.userId,
                             "name": this.selectedUser.name,
                             "level": this.selectedUser.level
