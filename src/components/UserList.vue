@@ -8,15 +8,81 @@
         <div v-if="isUserExists">
             <UserCard v-for="(user, key) in users" v-bind:user="user" :key="key"
                       @click.native="_onClick(key)"></UserCard>
-            <UserModal v-bind:userId.sync="selectedUser.userId"
-                       v-bind:userName.sync="selectedUser.name"
-                       v-bind:user-level.sync="selectedUser.level"
-                       v-bind:is-editable="isEditable"
-                       v-bind:login-user-level="loginUser.level"
-                       v-bind:isOpen="isOpenModal"
-                       v-bind:isUpdate="isUpdate"
-                       v-bind:changeModalStatus="_changeModalStatus"
-                       v-bind:refresh-list="_refresh"></UserModal>
+        </div>
+        <div class="modal" v-bind:class="{'is-active': isOpenModal}">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">회원 {{_statusText}}</p>
+                    <button class="delete" aria-label="close" @click="_changeModalStatus(false)"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">회원 ID</label>
+                        <div class="control has-icons-left has-icons-right">
+                            <input class="input" type="email" placeholder="email" v-model.trim="this.selectedUser.userId"
+                                   :readonly="isUpdate || !_isEditable">
+                            <span class="icon is-small is-left">
+      <i class="fas fa-envelope"></i>
+    </span>
+                            <span class="icon is-small is-right">
+      <i class="fas fa-check"></i>
+    </span>
+                        </div>
+                    </div>
+
+                    <template v-if="!isUpdate">
+                        <div class="field">
+                            <label class="label">패스워드</label>
+                            <div class="control has-icons-left has-icons-right">
+                                <input class="input" type="password" placeholder="Password" v-model="password">
+                                <span class="icon is-small is-left">
+      <i class="fas fa-lock"></i>
+    </span>
+                                <span class="icon is-small is-right">
+      <i class="fas fa-check"></i>
+    </span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="field">
+                        <label class="label">회원명</label>
+                        <div class="control has-icons-left has-icons-right">
+                            <input class="input" type="text" placeholder="Username" v-model.trim="this.selectedUser.name" :readonly="!_isEditable">
+                            <span class="icon is-small is-left">
+      <i class="fas fa-user"></i>
+    </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">등급</label>
+                        <div class="control">
+                            <p v-if="_isMaster" class="is-success">Master</p>
+                            <p v-else-if="!_isEditable" class="is-success">{{levels[selectedUser.level]}}</p>
+                            <div class="select" v-else>
+                                <select v-model.number="selectedUser.level">
+                                    <option
+                                            v-for="(_level,_key) in levels" v-bind:key="_key" v-bind:value="_key" v-if="_key < loginUser.level">
+                                        {{_level}}
+
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field is-grouped" v-if="_isEditable">
+                        <div class="control" @click="_onSubmit()">
+                            <button class="button is-link">{{_statusText}}</button>
+                        </div>
+                        <div class="control" @click="_changeModalStatus(false)">
+                            <button class="button is-text">취소</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
 </template>
@@ -24,11 +90,10 @@
 <script>
     import UserCard from "./UserCard.vue";
     import * as axios from 'axios';
-    import UserModal from "./UserModal";
 
     export default {
         name: "UserList",
-        components: {UserModal, UserCard},
+        components: {UserCard},
         data: function () {
             return {
                 users: [],
@@ -43,12 +108,20 @@
                 endPoint: `https://hodory-user-management.herokuapp.com`,
                 loginUser: {
                     level : 0
-                }
+                },
+                levels: {
+                    1: "Bronze",
+                    2: "Silver",
+                    3: "Gold",
+                    4: "Platinum",
+                    5: "Diamond"
+                },
+                password: null,
             };
         },
         methods: {
             _onClick(key) {
-                this.selectedUser = this.users[key];
+                this.selectedUser = Object.assign({},this.users[key]);
                 this.isUpdate = true;
                 this._changeModalStatus(true);
             },
@@ -98,6 +171,37 @@
                         alert(`로그인 정보 조회에 오류가 발생했습니다.${error.response.data.message}`);
                     }
                 );
+            },
+            async _onSubmit() {
+                // TODO : 회원 등록 / 수정시 리렌더링 처리
+                if(!this._isEditable()) {
+                    return false;
+                }
+                // userID 리턴받도록 수정
+                if (this.isUpdate) {
+                    try {
+                        const updateResponse = await axios.patch(`https://hodory-user-management.herokuapp.com/v1/users/2`, {
+                            "id": this.selectedUser.userId,
+                            "name": this.selectedUser.name,
+                            "level": this.selectedUser.level
+                        });
+                        this._refresh();
+                    } catch (e) {
+                        alert(e.response.data.message);
+                    }
+                } else {
+                    try {
+                        const createResponse = await axios.post(`https://hodory-user-management.herokuapp.com/v1/users`, {
+                            "id": this.selectedUser.userId,
+                            "password": this.password,
+                            "name": this.selectedUser.name,
+                            "level": this.selectedUser.level
+                        });
+                        this._refresh();
+                    } catch (e) {
+                        alert(e.response.data.message);
+                    }
+                }
             }
         },
         mounted() {
@@ -110,6 +214,15 @@
             },
             isEditable(){
                 return this.loginUser && this.loginUser.level > 4;
+            },
+            _statusText() {
+                return (this.isUpdate) ? "수정" : "등록";
+            },
+            _isMaster() {
+                return this.selectedUser.level === 99;
+            },
+            _isEditable() {
+                return this.isEditable && this.loginUser.level > this.selectedUser.level;
             }
         },
     }
